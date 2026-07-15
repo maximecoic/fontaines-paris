@@ -338,10 +338,10 @@
     });
     var line = formatNumberFr(available) + ' fontaines disponibles sur ' + formatNumberFr(total);
     if (!state.dataFresh) line += ' · hors ligne';
-    $('stats-line').textContent = total ? line : 'Données indisponibles';
+    state.statsLine = total ? line : 'Données indisponibles';
 
     if (state.sheetMode === 'idle') {
-      $('sheet-peek-text').textContent = total ? line : 'Données indisponibles';
+      $('sheet-peek-text').textContent = state.statsLine;
     }
   }
 
@@ -360,7 +360,7 @@
   }
 
   function renderIdle() {
-    $('sheet-peek-text').textContent = $('stats-line').textContent;
+    $('sheet-peek-text').textContent = state.statsLine || 'Chargement…';
     $('sheet-content').innerHTML = '<p class="sheet-empty">Recherchez une adresse ou touchez <strong>Me localiser</strong> pour voir les fontaines les plus proches.</p>';
   }
 
@@ -550,7 +550,6 @@
           var d = new Date(cached.ts);
           showToast('Hors ligne : affichage des données du ' + d.toLocaleDateString('fr-FR') + '.', 5000);
         } else {
-          $('stats-line').textContent = 'Données indisponibles';
           $('sheet-peek-text').textContent = 'Données indisponibles';
           $('sheet-content').innerHTML = '<p class="sheet-empty">Impossible de charger les fontaines. Vérifiez votre connexion puis relancez l\u2019application.</p>';
           showToast('Impossible de charger les données. Vérifiez votre connexion.', 5000);

@@ -126,68 +126,46 @@ input { font: inherit; color: inherit; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ---------------------------------------------------------------------- */
-/* Top floating card                                                        */
+/* Theme toggle — standalone corner button (kept out of the sheet so it's  */
+/* reachable regardless of expand/collapse state)                          */
 /* ---------------------------------------------------------------------- */
-.top-card {
+.theme-fab {
   position: fixed;
   top: calc(var(--safe-top) + 12px);
-  left: calc(var(--safe-left) + 12px);
   right: calc(var(--safe-right) + 12px);
   z-index: 500;
-  max-width: 420px;
-  margin: 0 auto;
-  padding: 12px 14px calc(10px);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--border);
-  transition: transform .3s ease, opacity .3s ease;
-}
-
-.brand-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.brand-logo {
-  border-radius: 8px;
-  display: block;
-  flex-shrink: 0;
-}
-
-.brand-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.25;
-  min-width: 0;
-  flex: 1;
-}
-.brand-text strong { font-size: 15px; letter-spacing: -0.01em; }
-.stats-line {
-  font-size: 12.5px;
-  color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.icon-btn {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   flex-shrink: 0;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--primary-soft);
+  background: var(--surface);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
   color: var(--primary);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
   transition: background .15s ease, transform .15s ease;
 }
-.icon-btn:active { transform: scale(0.92); }
+.theme-fab:active { transform: scale(0.92); }
+
+/* ---------------------------------------------------------------------- */
+/* Brand row — now lives inside the sheet body                             */
+/* ---------------------------------------------------------------------- */
+.brand-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.brand-row strong { font-size: 14.5px; letter-spacing: -0.01em; color: var(--text); }
+
+.brand-logo {
+  border-radius: 7px;
+  display: block;
+  flex-shrink: 0;
+}
 
 .search-box {
   display: flex;
@@ -231,7 +209,6 @@ html[data-theme='dark'] .search-box { background: rgba(255,255,255,0.05); }
 .chip-row {
   display: flex;
   gap: 8px;
-  margin-top: 10px;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -269,17 +246,18 @@ html[data-theme='dark'] .chip { background: rgba(255,255,255,0.05); }
 .chip[aria-pressed='true'] .chip-dot { background: #fff; }
 
 /* ---------------------------------------------------------------------- */
-/* Floating action buttons                                                  */
+/* Floating action buttons — nested inside the sheet, anchored just above  */
+/* its top edge, so they slide up/down together with it automatically.     */
 /* ---------------------------------------------------------------------- */
 .fab-stack {
-  position: fixed;
-  right: calc(var(--safe-right) + 14px);
-  bottom: calc(var(--safe-bottom) + 100px);
+  position: absolute;
+  right: 14px;
+  bottom: 100%;
+  margin-bottom: 14px;
   z-index: 480;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  transition: bottom .3s ease;
 }
 
 .fab {
@@ -335,6 +313,9 @@ html[data-theme='dark'] .chip { background: rgba(255,255,255,0.05); }
   flex-shrink: 0;
   padding: 10px 18px 8px;
   text-align: left;
+  position: relative;
+  z-index: 1;
+  background: transparent;
 }
 .sheet-handle-bar {
   width: 38px;
@@ -362,8 +343,20 @@ html[data-theme='dark'] .chip { background: rgba(255,255,255,0.05); }
   transform: rotate(180deg);
 }
 
+.sheet-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  flex: 1 1 auto;
+  padding: 2px 18px 0;
+}
+
 .sheet-content {
-  padding: 2px 18px 18px;
+  padding: 6px 0 18px;
+  margin: 0 -2px;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -586,10 +579,8 @@ html[data-theme='dark'] .chip { background: rgba(255,255,255,0.05); }
 /* Responsive: wider screens                                                */
 /* ---------------------------------------------------------------------- */
 @media (min-width: 620px) {
-  .top-card { left: calc(var(--safe-left) + 16px); right: auto; width: 380px; }
   .sheet { left: calc(var(--safe-left) + 16px); right: auto; width: 380px; bottom: calc(var(--safe-bottom) + 16px); border-radius: var(--radius-lg); max-height: 60vh; }
   .sheet:not([data-state='expanded']) { transform: translateY(calc(100% - var(--sheet-peek, 64px))); }
-  .fab-stack { bottom: calc(var(--safe-bottom) + 24px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
