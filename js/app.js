@@ -231,6 +231,27 @@
 
     $('zoom-in-btn').addEventListener('click', function () { map.zoomIn(); });
     $('zoom-out-btn').addEventListener('click', function () { map.zoomOut(); });
+
+    keepMapSized();
+  }
+
+  // iOS standalone PWAs lay the map out during the launch/splash transition, so
+  // Leaflet frequently measures the container before the real viewport height
+  // (and the home-indicator safe area) has settled. It then paints tiles over
+  // that stale, too-short area only, leaving the map's own --bg background
+  // showing as a band in the bottom safe zone. Re-measuring after the layout
+  // settles — and whenever the app is resized, rotated, or brought back to the
+  // foreground — makes Leaflet fill the full screen.
+  function keepMapSized() {
+    var refresh = function () { if (map) map.invalidateSize({ animate: false, pan: false }); };
+    requestAnimationFrame(refresh);
+    [120, 400, 900, 1800].forEach(function (ms) { setTimeout(refresh, ms); });
+    window.addEventListener('load', refresh);
+    window.addEventListener('orientationchange', function () { setTimeout(refresh, 300); });
+    window.addEventListener('pageshow', refresh);
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) refresh();
+    });
   }
 
   function dropletIcon(color) {
@@ -570,6 +591,19 @@
 
   function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
+      // When a new service worker takes control after we ship an update, reload
+      // once so the freshly cached HTML/CSS/JS actually render (installed iOS
+      // PWAs otherwise keep showing the old shell). Guarded so it only fires for
+      // real updates — a controller already existed — never on first install,
+      // and never more than once (no reload loop).
+      if (navigator.serviceWorker.controller) {
+        var reloadedForUpdate = false;
+        navigator.serviceWorker.addEventListener('controllerchange', function () {
+          if (reloadedForUpdate) return;
+          reloadedForUpdate = true;
+          window.location.reload();
+        });
+      }
       window.addEventListener('load', function () {
         navigator.serviceWorker.register('./service-worker.js').catch(function (err) {
           console.warn('Service worker non enregistré', err);

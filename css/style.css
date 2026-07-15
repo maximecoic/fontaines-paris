@@ -86,20 +86,20 @@ body {
 
 #map {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  width: 100dvw;
-  /* In an iOS standalone (home-screen) PWA, 100dvh resolves to the screen
-     height *minus* the bottom home-indicator safe area, so a top-anchored
-     map stops short of the physical bottom edge and leaves a --bg strip in
-     the safe zone. Adding the bottom inset back extends the map's bottom
-     edge to the true screen edge so it fills 100% incl. the safe zone
-     (viewport-fit=cover is set on the viewport meta). Any overshoot on
-     browsers where 100dvh already means full-screen is harmless: the map is
-     position:fixed and <body> clips overflow, so the surplus sits off-screen. */
-  height: calc(100dvh + var(--safe-bottom));
+  /* Fill the ENTIRE physical screen, including every safe-area inset, in an
+     iOS standalone PWA. In standalone mode 100dvh (and the fixed containing
+     block) may be computed with or without the status-bar (top) and
+     home-indicator (bottom) safe areas depending on the iOS version, so rather
+     than sizing with dvh we stretch the map to the viewport edges and pull each
+     edge OUTWARD by its safe-area inset. That guarantees the tiles reach the
+     true screen edges in every case; any overshoot is off-screen and harmless
+     (position:fixed + <body> clips overflow). Leaflet is told to re-measure via
+     invalidateSize() once the standalone viewport settles (see app.js) so its
+     tile layer actually fills this box instead of leaving a --bg band. */
+  top: calc(-1 * var(--safe-top));
+  right: calc(-1 * var(--safe-right));
+  bottom: calc(-1 * var(--safe-bottom));
+  left: calc(-1 * var(--safe-left));
   background: var(--bg);
 }
 
