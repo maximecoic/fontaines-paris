@@ -52,7 +52,7 @@
     dataTimestamp: null
   };
 
-  var map, clusterGroup, tileLight, tileDark, userMarker;
+  var map, clusterGroup, tileLight, tileDark, userMarker, mapResizeObserver;
 
   /* ---------------------------------------------------------------- */
   /* Utilities                                                          */
@@ -233,48 +233,29 @@
     $('zoom-out-btn').addEventListener('click', function () { map.zoomOut(); });
 
     keepMapSized();
-    forceStandaloneViewportRecalc();
   }
 
-  // iOS standalone PWAs lay the map out during the launch/splash transition, so
-  // Leaflet frequently measures the container before the real viewport height
-  // (and the home-indicator safe area) has settled. It then paints tiles over
-  // that stale, too-short area only, leaving the map's own --bg background
-  // showing as a band in the bottom safe zone. Re-measuring after the layout
-  // settles — and whenever the app is resized, rotated, or brought back to the
-  // foreground — makes Leaflet fill the full screen.
+  // Leaflet listens to window resize, but an installed iOS PWA can change the
+  // map element's box during its launch transition without emitting a reliable
+  // window event. Observe the actual container and retain delayed fallbacks for
+  // older WebKit versions so Leaflet always adopts the CSS box dimensions.
   function keepMapSized() {
     var refresh = function () { if (map) map.invalidateSize({ animate: false, pan: false }); };
+    if ('ResizeObserver' in window) {
+      mapResizeObserver = new ResizeObserver(function () {
+        requestAnimationFrame(refresh);
+      });
+      mapResizeObserver.observe(map.getContainer());
+    }
     requestAnimationFrame(refresh);
     [120, 400, 900, 1800].forEach(function (ms) { setTimeout(refresh, ms); });
     window.addEventListener('load', refresh);
+    window.addEventListener('resize', refresh);
     window.addEventListener('orientationchange', function () { setTimeout(refresh, 300); });
     window.addEventListener('pageshow', refresh);
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', refresh);
     document.addEventListener('visibilitychange', function () {
       if (!document.hidden) refresh();
-    });
-  }
-
-  // On an iOS standalone PWA the viewport and env(safe-area-inset-*) values are
-  // computed lazily on cold start and stay wrong until the first geometry change
-  // (a physical rotation) — with no API to trigger that recalc directly. Briefly
-  // toggling viewport-fit from cover to auto and back forces WebKit to recompute
-  // them without a rotation; we then re-measure the map. Runs once, standalone
-  // only.
-  function forceStandaloneViewportRecalc() {
-    var standalone = (navigator.standalone === true) ||
-      (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-    if (!standalone) return;
-    var meta = document.querySelector('meta[name="viewport"]');
-    if (!meta) return;
-    var cover = meta.getAttribute('content') || '';
-    if (cover.indexOf('viewport-fit=cover') === -1) return;
-    meta.setAttribute('content', cover.replace('viewport-fit=cover', 'viewport-fit=auto'));
-    requestAnimationFrame(function () {
-      meta.setAttribute('content', cover);
-      requestAnimationFrame(function () {
-        if (map) map.invalidateSize({ animate: false, pan: false });
-      });
     });
   }
 

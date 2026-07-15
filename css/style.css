@@ -58,18 +58,13 @@ html[data-theme='dark'] {
 html, body {
   margin: 0;
   padding: 0;
+  width: 100%;
   height: 100%;
   overflow: hidden;
   overscroll-behavior: none;
-  /* Do NOT put `position: fixed` on html/body. In an iOS standalone PWA with
-     viewport-fit=cover that is exactly what breaks full-height layout: WebKit
-     leaves a gap at the bottom the size of the home-indicator safe area, and
-     no height unit (100vh / 100% / 100dvh / -webkit-fill-available) closes it
-     (WebKit bug 237961). The full-screen layers below are `position: fixed`
-     CHILDREN of <body> instead — a fixed *child* stretched with
-     top/right/bottom/left:0 DOES fill the whole physical screen (incl. safe
-     areas) per StackOverflow 79902310. Rubber-band bounce is prevented with
-     overflow:hidden + overscroll-behavior, not by pinning html/body. */
+  /* Never position html/body themselves as fixed: WebKit bug 237961 creates a
+     safe-area-sized bottom gap in installed PWAs. The standalone override
+     below uses an explicit 100vh instead. */
 }
 
 body {
@@ -81,14 +76,6 @@ body {
 }
 
 #map {
-  /* Full-bleed map. Stretch a position:fixed CHILD to all four viewport edges
-     (top/right/bottom/left:0, no explicit width/height). In an iOS standalone
-     PWA with viewport-fit=cover this is the ONE approach that reaches the true
-     physical screen edges incl. the home-indicator safe area — provided
-     html/body are NOT position:fixed (see the html/body rule + WebKit bug
-     237961 / StackOverflow 79902310). Sizing a fixed element with 100vh/100dvh
-     or env() insets all leave a bottom gap on cold start; inset:0 does not.
-     app.js also calls map.invalidateSize() so Leaflet's tiles fill the box. */
   position: fixed;
   top: 0;
   right: 0;
@@ -124,6 +111,30 @@ input { font: inherit; color: inherit; }
 }
 .loading-overlay[hidden] { display: none; }
 .loading-overlay.is-fading { opacity: 0; visibility: hidden; }
+
+/* Installed iOS PWA, verified on a physical 375x812 iPhone running iOS 18.7:
+   during cold start window.innerHeight and the initial containing block begin
+   at 762px, while 100vh is already the correct full 812px screen height.
+   Percentage height and fixed inset:0 therefore stop 50px short; explicit
+   100vh reaches the physical bottom immediately. Keep html/body in normal
+   flow (WebKit bug 237961), and size full-bleed children from top/left. */
+@media (display-mode: standalone) {
+  html,
+  body {
+    width: 100vw;
+    height: 100vh;
+  }
+
+  #map,
+  .loading-overlay {
+    top: 0;
+    right: auto;
+    bottom: auto;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+  }
+}
 
 .loading-card {
   display: flex;
