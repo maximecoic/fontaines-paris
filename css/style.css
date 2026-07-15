@@ -62,18 +62,17 @@ html, body {
   /* Pin html/body to the true viewport edges (rather than relying on 100%
      height in normal flow) so there is zero scrollable slack for iOS to
      reveal via rubber-band bounce when the app runs standalone from the
-     home screen. Anchoring from top/left and sizing with width/height
-     (topped up with the dynamic viewport units) is more reliable on iOS
-     home-screen apps than bottom/right-based `inset: 0`, which can settle
-     a few pixels short of the true screen edge and reveal --bg below the
-     sheet as a stray bar. */
+     home screen. Size with 100vw/100vh — NOT 100dvh: on an iOS standalone
+     PWA the dynamic viewport units report the wrong (too-short) value on
+     cold start and only self-correct after a physical rotation, which leaves
+     a --bg band in the bottom safe area. In standalone there is no browser
+     toolbar, so 100vh already equals the full screen (== window.innerHeight)
+     and, crucially, it is correct from the very first paint. */
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  width: 100dvw;
-  height: 100dvh;
+  width: 100vw;
+  height: 100vh;
 }
 
 body {
@@ -85,21 +84,20 @@ body {
 }
 
 #map {
+  /* Full-bleed map. Use 100vw/100vh (NOT 100dvh, NOT env()-based insets):
+     both the dynamic viewport units and env(safe-area-inset-*) are computed
+     wrong/zero on an iOS standalone PWA cold start and only settle after a
+     rotation, which left the map short and showed its own --bg background as a
+     band in the bottom safe zone. In standalone mode 100vh spans the full
+     physical screen (incl. safe areas, thanks to viewport-fit=cover) and is
+     correct from the first paint. app.js additionally forces WebKit to
+     recompute the viewport once on launch and calls map.invalidateSize() so
+     Leaflet's tiles fill the whole box. */
   position: fixed;
-  /* Fill the ENTIRE physical screen, including every safe-area inset, in an
-     iOS standalone PWA. In standalone mode 100dvh (and the fixed containing
-     block) may be computed with or without the status-bar (top) and
-     home-indicator (bottom) safe areas depending on the iOS version, so rather
-     than sizing with dvh we stretch the map to the viewport edges and pull each
-     edge OUTWARD by its safe-area inset. That guarantees the tiles reach the
-     true screen edges in every case; any overshoot is off-screen and harmless
-     (position:fixed + <body> clips overflow). Leaflet is told to re-measure via
-     invalidateSize() once the standalone viewport settles (see app.js) so its
-     tile layer actually fills this box instead of leaving a --bg band. */
-  top: calc(-1 * var(--safe-top));
-  right: calc(-1 * var(--safe-right));
-  bottom: calc(-1 * var(--safe-bottom));
-  left: calc(-1 * var(--safe-left));
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   background: var(--bg);
 }
 
@@ -119,10 +117,8 @@ input { font: inherit; color: inherit; }
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  width: 100dvw;
-  height: 100dvh;
+  width: 100vw;
+  height: 100vh;
   z-index: 900;
   display: flex;
   align-items: center;

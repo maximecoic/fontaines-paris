@@ -233,6 +233,7 @@
     $('zoom-out-btn').addEventListener('click', function () { map.zoomOut(); });
 
     keepMapSized();
+    forceStandaloneViewportRecalc();
   }
 
   // iOS standalone PWAs lay the map out during the launch/splash transition, so
@@ -251,6 +252,29 @@
     window.addEventListener('pageshow', refresh);
     document.addEventListener('visibilitychange', function () {
       if (!document.hidden) refresh();
+    });
+  }
+
+  // On an iOS standalone PWA the viewport and env(safe-area-inset-*) values are
+  // computed lazily on cold start and stay wrong until the first geometry change
+  // (a physical rotation) — with no API to trigger that recalc directly. Briefly
+  // toggling viewport-fit from cover to auto and back forces WebKit to recompute
+  // them without a rotation; we then re-measure the map. Runs once, standalone
+  // only.
+  function forceStandaloneViewportRecalc() {
+    var standalone = (navigator.standalone === true) ||
+      (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+    if (!standalone) return;
+    var meta = document.querySelector('meta[name="viewport"]');
+    if (!meta) return;
+    var cover = meta.getAttribute('content') || '';
+    if (cover.indexOf('viewport-fit=cover') === -1) return;
+    meta.setAttribute('content', cover.replace('viewport-fit=cover', 'viewport-fit=auto'));
+    requestAnimationFrame(function () {
+      meta.setAttribute('content', cover);
+      requestAnimationFrame(function () {
+        if (map) map.invalidateSize({ animate: false, pan: false });
+      });
     });
   }
 
