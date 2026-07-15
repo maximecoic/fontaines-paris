@@ -57,8 +57,17 @@ html[data-theme='dark'] {
 
 html, body {
   height: 100%;
+  width: 100%;
   margin: 0;
+  overflow: hidden;
   overscroll-behavior: none;
+  /* Pin html/body to the true viewport edges (rather than relying on 100%
+     height in normal flow) so there is zero scrollable slack for iOS to
+     reveal via rubber-band bounce when the app runs standalone from the
+     home screen — that slack was showing up as a stray bar in the color
+     of --bg below the bottom sheet. */
+  position: fixed;
+  inset: 0;
 }
 
 body {
