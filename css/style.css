@@ -56,18 +56,24 @@ html[data-theme='dark'] {
 * { box-sizing: border-box; }
 
 html, body {
-  height: 100%;
-  width: 100%;
   margin: 0;
   overflow: hidden;
   overscroll-behavior: none;
   /* Pin html/body to the true viewport edges (rather than relying on 100%
      height in normal flow) so there is zero scrollable slack for iOS to
      reveal via rubber-band bounce when the app runs standalone from the
-     home screen — that slack was showing up as a stray bar in the color
-     of --bg below the bottom sheet. */
+     home screen. Anchoring from top/left and sizing with width/height
+     (topped up with the dynamic viewport units) is more reliable on iOS
+     home-screen apps than bottom/right-based `inset: 0`, which can settle
+     a few pixels short of the true screen edge and reveal --bg below the
+     sheet as a stray bar. */
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  width: 100dvw;
+  height: 100dvh;
 }
 
 body {
@@ -80,7 +86,12 @@ body {
 
 #map {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  width: 100dvw;
+  height: 100dvh;
   background: var(--bg);
 }
 
@@ -98,7 +109,12 @@ input { font: inherit; color: inherit; }
 /* ---------------------------------------------------------------------- */
 .loading-overlay {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  width: 100dvw;
+  height: 100dvh;
   z-index: 900;
   display: flex;
   align-items: center;
