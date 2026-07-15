@@ -5,7 +5,7 @@
    installed on the iOS home screen.
    ========================================================================== */
 
-var VERSION = 'v8';
+var VERSION = 'v9';
 var SHELL_CACHE = 'fp-shell-' + VERSION;
 var DATA_CACHE = 'fp-data-' + VERSION;
 var TILE_CACHE = 'fp-tiles-' + VERSION;

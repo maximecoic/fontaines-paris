@@ -57,22 +57,19 @@ html[data-theme='dark'] {
 
 html, body {
   margin: 0;
+  padding: 0;
+  height: 100%;
   overflow: hidden;
   overscroll-behavior: none;
-  /* Pin html/body to the true viewport edges (rather than relying on 100%
-     height in normal flow) so there is zero scrollable slack for iOS to
-     reveal via rubber-band bounce when the app runs standalone from the
-     home screen. Size with 100vw/100vh — NOT 100dvh: on an iOS standalone
-     PWA the dynamic viewport units report the wrong (too-short) value on
-     cold start and only self-correct after a physical rotation, which leaves
-     a --bg band in the bottom safe area. In standalone there is no browser
-     toolbar, so 100vh already equals the full screen (== window.innerHeight)
-     and, crucially, it is correct from the very first paint. */
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  /* Do NOT put `position: fixed` on html/body. In an iOS standalone PWA with
+     viewport-fit=cover that is exactly what breaks full-height layout: WebKit
+     leaves a gap at the bottom the size of the home-indicator safe area, and
+     no height unit (100vh / 100% / 100dvh / -webkit-fill-available) closes it
+     (WebKit bug 237961). The full-screen layers below are `position: fixed`
+     CHILDREN of <body> instead — a fixed *child* stretched with
+     top/right/bottom/left:0 DOES fill the whole physical screen (incl. safe
+     areas) per StackOverflow 79902310. Rubber-band bounce is prevented with
+     overflow:hidden + overscroll-behavior, not by pinning html/body. */
 }
 
 body {
@@ -84,20 +81,19 @@ body {
 }
 
 #map {
-  /* Full-bleed map. Use 100vw/100vh (NOT 100dvh, NOT env()-based insets):
-     both the dynamic viewport units and env(safe-area-inset-*) are computed
-     wrong/zero on an iOS standalone PWA cold start and only settle after a
-     rotation, which left the map short and showed its own --bg background as a
-     band in the bottom safe zone. In standalone mode 100vh spans the full
-     physical screen (incl. safe areas, thanks to viewport-fit=cover) and is
-     correct from the first paint. app.js additionally forces WebKit to
-     recompute the viewport once on launch and calls map.invalidateSize() so
-     Leaflet's tiles fill the whole box. */
+  /* Full-bleed map. Stretch a position:fixed CHILD to all four viewport edges
+     (top/right/bottom/left:0, no explicit width/height). In an iOS standalone
+     PWA with viewport-fit=cover this is the ONE approach that reaches the true
+     physical screen edges incl. the home-indicator safe area — provided
+     html/body are NOT position:fixed (see the html/body rule + WebKit bug
+     237961 / StackOverflow 79902310). Sizing a fixed element with 100vh/100dvh
+     or env() insets all leave a bottom gap on cold start; inset:0 does not.
+     app.js also calls map.invalidateSize() so Leaflet's tiles fill the box. */
   position: fixed;
   top: 0;
+  right: 0;
+  bottom: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
   background: var(--bg);
 }
 
@@ -116,9 +112,9 @@ input { font: inherit; color: inherit; }
 .loading-overlay {
   position: fixed;
   top: 0;
+  right: 0;
+  bottom: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
   z-index: 900;
   display: flex;
   align-items: center;
