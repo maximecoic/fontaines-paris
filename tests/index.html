@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta id="viewport-meta" name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Fontaines Paris — Laboratoire iOS</title>
+<meta name="description" content="Laboratoire isolé pour diagnostiquer le viewport, la safe area et Leaflet dans une PWA iOS installée.">
+<meta name="robots" content="noindex, nofollow">
+
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#0b63c5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fontaines Lab">
+<link rel="apple-touch-icon" href="../icons/icon-180.png">
+
+<link rel="stylesheet" href="../vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<div id="map" aria-label="Carte de diagnostic"></div>
+
+<header class="top-hud">
+  <div>
+    <strong>Laboratoire iOS</strong>
+    <span id="variant-label">Chargement…</span>
+  </div>
+  <div class="header-actions">
+    <button id="copy-report" type="button">Copier</button>
+    <button id="toggle-panel" type="button" aria-expanded="true">Masquer</button>
+  </div>
+</header>
+
+<main class="diagnostics" id="diagnostics">
+  <section class="controls" aria-label="Choix de la stratégie">
+    <label for="variant">Stratégie</label>
+    <select id="variant">
+      <option value="candidate">Candidate : racine 100vh + carte 100vh</option>
+      <option value="fixed-inset">Actuelle : carte fixed inset:0</option>
+      <option value="dvh">Comparaison : 100dvh</option>
+      <option value="percent">Comparaison : hauteur 100%</option>
+      <option value="js-inner">Comparaison : window.innerHeight</option>
+    </select>
+    <button id="refresh-measurements" type="button">Re-mesurer</button>
+    <button id="toggle-viewport-fit" type="button">Basculer viewport-fit</button>
+    <button id="clear-log" type="button">Effacer le journal</button>
+  </section>
+
+  <section class="summary" id="summary" aria-live="polite"></section>
+
+  <details open>
+    <summary>Mesures complètes</summary>
+    <table id="metrics-table">
+      <tbody></tbody>
+    </table>
+  </details>
+
+  <details>
+    <summary>Journal de lancement</summary>
+    <pre id="event-log"></pre>
+  </details>
+
+  <p class="instructions">
+    Test recommandé : installer cette page sur l’écran d’accueil, fermer complètement l’app,
+    la relancer à froid, attendre 3 secondes, puis utiliser <strong>Copier</strong>. Refaire le test
+    après une rotation et pour chaque stratégie.
+  </p>
+</main>
+
+<div class="safe-probe safe-probe-top" aria-hidden="true"></div>
+<div class="safe-probe safe-probe-right" aria-hidden="true"></div>
+<div class="safe-probe safe-probe-bottom" aria-hidden="true"></div>
+<div class="safe-probe safe-probe-left" aria-hidden="true"></div>
+<div class="unit-probe probe-vh" aria-hidden="true"></div>
+<div class="unit-probe probe-dvh" aria-hidden="true"></div>
+<div class="unit-probe probe-svh" aria-hidden="true"></div>
+<div class="unit-probe probe-lvh" aria-hidden="true"></div>
+
+<script src="../vendor/leaflet/leaflet.js"></script>
+<script src="./lab.js"></script>
+</body>
+</html>
