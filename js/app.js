@@ -47,7 +47,7 @@
     filterAvailableOnly: false,
     searchTerm: '',
     userLatLng: null,
-    sheetMode: 'idle', // idle | search | nearest
+    sheetMode: 'idle', // idle | search
     dataFresh: true,
     dataTimestamp: null
   };
@@ -324,9 +324,8 @@
       state.sheetMode = 'search';
       renderSearchResults(filtered);
     } else if (state.sheetMode === 'search') {
-      state.sheetMode = state.userLatLng ? 'nearest' : 'idle';
-      if (state.sheetMode === 'nearest') renderNearest();
-      else renderIdle();
+      state.sheetMode = 'idle';
+      renderIdle();
     }
   }
 
@@ -361,7 +360,7 @@
 
   function renderIdle() {
     $('sheet-peek-text').textContent = state.statsLine || 'Chargement…';
-    $('sheet-content').innerHTML = '<p class="sheet-empty">Recherchez une adresse ou touchez <strong>Me localiser</strong> pour voir les fontaines les plus proches.</p>';
+    $('sheet-content').innerHTML = '<p class="sheet-empty">Recherchez une rue ou un quartier, ou touchez <strong>Me localiser</strong> pour centrer la carte sur votre position.</p>';
   }
 
   function rowHtml(item) {
@@ -414,30 +413,6 @@
     setSheetExpanded(true);
   }
 
-  function renderNearest() {
-    if (!state.userLatLng) { renderIdle(); return; }
-    var items = [];
-    state.markerByGid.forEach(function (marker) {
-      var props = marker.fpData.props;
-      if (state.filterAvailableOnly && props.dispo !== 'OUI') return;
-      items.push({
-        props: props,
-        distance: haversineMeters(state.userLatLng[0], state.userLatLng[1], marker.fpData.lat, marker.fpData.lon)
-      });
-    });
-    items.sort(function (a, b) { return a.distance - b.distance; });
-    items = items.slice(0, 15);
-
-    $('sheet-peek-text').textContent = 'Fontaines les plus proches';
-    if (!items.length) {
-      $('sheet-content').innerHTML = '<p class="sheet-empty">Aucune fontaine trouvée à proximité.</p>';
-      return;
-    }
-    $('sheet-content').innerHTML = '<p class="sheet-title">Les plus proches de vous</p>' + items.map(rowHtml).join('');
-    bindResultRows();
-    setSheetExpanded(true);
-  }
-
   function focusMarker(gid) {
     var marker = state.markerByGid.get(String(gid));
     if (!marker) return;
@@ -475,9 +450,6 @@
       map.flyTo(state.userLatLng, 16, { duration: 0.8 });
       if (state.searchTerm.trim()) {
         applyFilters();
-      } else {
-        state.sheetMode = 'nearest';
-        renderNearest();
       }
     }, function (err) {
       btn.classList.remove('is-loading');
@@ -591,7 +563,6 @@
       state.filterAvailableOnly = !state.filterAvailableOnly;
       $('filter-available').setAttribute('aria-pressed', String(state.filterAvailableOnly));
       applyFilters();
-      if (state.sheetMode === 'nearest') renderNearest();
     });
 
     $('locate-btn').addEventListener('click', locateMe);
