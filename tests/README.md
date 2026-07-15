@@ -6,6 +6,7 @@ Ce dossier est entièrement isolé de l’application principale.
 - Manifeste, styles, JavaScript et service worker dédiés
 - Scope du service worker limité à `/tests/`
 - Aucun cache : toutes les requêtes utilisent le réseau avec `cache: no-store`
+- À l’activation, le worker du laboratoire supprime uniquement les éventuelles entrées `/tests/` que le worker racine aurait ajoutées pendant la toute première navigation
 - Aucun fichier de l’application principale n’est modifié ou importé, hormis les bibliothèques Leaflet et les icônes statiques en lecture seule
 
 ## Test sur iPhone

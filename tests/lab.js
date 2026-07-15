@@ -2,7 +2,7 @@
 (function () {
   'use strict';
 
-  var LAB_VERSION = 'lab-v1';
+  var LAB_VERSION = 'lab-v2';
   var VALID_VARIANTS = ['candidate', 'fixed-inset', 'dvh', 'percent', 'js-inner'];
   var VARIANT_LABELS = {
     candidate: 'Racine 100vh + carte 100vw/100vh',
